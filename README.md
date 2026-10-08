@@ -2,11 +2,11 @@
 
 基于 [Signal 官方开源桌面客户端](https://github.com/signalapp/Signal-Desktop) 二次开发，由 OneChat-Dev 维护。在 Signal 聊天界面中增加 AI 消息翻译、多账户登录、独立会话、浏览器指纹配置、代理 IP 配置和自动更新。
 
-本项目为第三方修改版本，非 Signal 官方产品，也不代表 Signal 官方。当前版本 **8.29.1**，基于 Signal Desktop **8.29.0** 开发。版本号表示本项目发布版本。
+本项目为第三方修改版本，非 Signal 官方产品，也不代表 Signal 官方。当前版本 **8.29.2**，基于 Signal Desktop **8.29.0** 开发。版本号表示本项目发布版本。
 
 ## 下载与安装
 
-- [下载 8.29.1 Windows x64 安装包](https://github.com/OneChat-Dev/Signal-AI-translation-OneChat-Desktop/releases/download/8.29.1/Signal-AI-Translation-8.29.1-x64-Setup.exe)
+- [下载 8.29.2 Windows x64 安装包](https://github.com/OneChat-Dev/Signal-AI-translation-OneChat-Desktop/releases/download/8.29.2/Signal-AI-Translation-8.29.2-x64-Setup.exe)
 - [查看最新发布](https://github.com/OneChat-Dev/Signal-AI-translation-OneChat-Desktop/releases/latest)
 - [详细使用指南](docs/使用指南.md)
 - [版本更新记录](CHANGELOG.md)
@@ -38,6 +38,12 @@
 账号栏的 `+` 跟随账号列表，可添加新账户并完成独立关联。后台账号保持各自会话，并在账号标签显示未读角标。不同账号可分别选择翻译语言、指纹及代理配置。新账号默认折叠 Signal 左侧导航选项卡。
 
 环境配置在侧边栏中操作，保存后重新加载当前账号。指纹配置作用于桌面页面的浏览器属性，不改变 Signal 账号或设备标识。代理覆盖当前账号的 Signal 消息、附件及页面网络；Signal 原生音视频网络不受浏览器 WebRTC 设置控制。OneChat 共享翻译连接及应用更新不属于逐账号代理的覆盖范围。
+
+## 侧边栏与窗口
+
+右侧栏顶部为“翻译设置、环境配置”，底部为“软件更新、联系客服、退出登录”。联系客服打开 [Telegram 客服](https://t.me/onechat_help)。退出登录返回激活码页面，关闭自动登录并取消待处理的翻译请求，保留 Signal 设备关联和本地聊天记录。
+
+默认窗口为 1280×860，小屏幕按可用工作区缩小。原来保存的 800×610 默认尺寸会更新，其他自定义尺寸继续保留。登录页显示实际应用版本。
 
 ## 翻译与本地数据
 
