@@ -1,156 +1,62 @@
+# Signal-AI翻译专版
 
-# 🪟 PySide6 嵌入式桌面侧边栏窗口（AppBar 实现）
+基于 [Signal 官方开源桌面客户端](https://github.com/signalapp/Signal-Desktop) 二次开发，由 OneChat-Dev 维护。在 Signal 聊天界面中增加 AI 消息翻译、多账户登录、独立会话、浏览器指纹配置、代理 IP 配置和自动更新。
 
-本项目展示如何使用 **PySide6 + Win32 API** 实现嵌入 Windows 桌面的侧边栏（AppBar），支持多显示器、高 DPI 缩放，兼容 Win7 / Win10 / Win11，适用于构建如任务栏工具栏、系统辅助工具、AI 提示栏等场景。
+本项目为第三方修改版本，非 Signal 官方产品，也不代表 Signal 官方。当前版本 **8.29.1**，基于 Signal Desktop **8.29.0** 开发。版本号表示本项目发布版本。
 
----
+## 下载与安装
 
-## ✅ 功能特性
+- [下载 8.29.1 Windows x64 安装包](https://github.com/OneChat-Dev/Signal-AI-translation-OneChat-Desktop/releases/download/8.29.1/Signal-AI-Translation-8.29.1-x64-Setup.exe)
+- [查看最新发布](https://github.com/OneChat-Dev/Signal-AI-translation-OneChat-Desktop/releases/latest)
+- [详细使用指南](docs/使用指南.md)
+- [版本更新记录](CHANGELOG.md)
 
-- 使用 `QMainWindow` 构建主界面窗口
-- 获取窗口句柄 `self.winId()` 实现 Win32 API 互操作
-- 通过 `SHAppBarMessage(ABM_NEW)` 注册 AppBar 窗口
-- 支持指定窗口边缘（左/右/上/下）：`ABE_LEFT / ABE_RIGHT / ABE_TOP / ABE_BOTTOM`
-- 使用 `SetWindowPos` 精确设置窗口尺寸与位置
-- 自动避开系统任务栏，不遮挡用户操作
-- 多屏幕兼容，可动态选择注册在哪个显示器
-- 高 DPI 缩放兼容，适配不同显示器缩放比例
+当前提供 Windows x64 安装包。安装后先使用 OneChat 激活码登录，再关联 Signal 账号；首次关联需要在手机 Signal 的关联设备页面扫描二维码。激活码登录用于本专版及翻译服务，不代替 Signal 的手机账号和设备关联。
 
----
+## 主要功能
 
-## 🧱 技术要点
+| 功能 | 实际行为 |
+| --- | --- |
+| 接收消息 AI 翻译 | 自动翻译收到的文字消息，在原消息下方显示译文，保留原始正文。 |
+| 发送消息 AI 翻译 | 在新增翻译框输入原文，第一次回车将译文填入 Signal 原生输入框；确认后再次回车发送。 |
+| 发送原文回看 | 通过翻译框发送的消息，在本机消息下方显示对应原文，便于核对。原文不作为附加内容发送给对方。 |
+| 多账户登录 | 顶部账号栏添加和切换多个 Signal 账号，显示昵称、头像及未读消息数量。 |
+| 独立 Session | 每个账号使用独立持久化会话、数据库及配置，账号的聊天记录、附件和翻译设置分开保存。 |
+| 本地译文缓存 | 译文随消息保存在当前账号的本地数据库，已有有效译文的消息再次打开时复用缓存。 |
+| 指纹配置 | 按账号设置地区、系统、浏览器版本、User-Agent、分辨率、字体、WebRTC 和地理位置策略。 |
+| 代理 IP 配置 | 按账号配置 SOCKS5、HTTP 或 HTTP CONNECT 代理，支持账号密码认证与出口 IP 检测。 |
+| 自动更新 | 启动后检查新版本，后台下载并校验安装包，提示用户确认安装；侧边栏支持手动检查。 |
 
-### 📌 Win32 API 嵌入桌面
+### 翻译交互
 
-```cpp
-APPBARDATA abd = {...};
-abd.uEdge = ABE_LEFT; // 可设置为 ABE_RIGHT / ABE_TOP / ABE_BOTTOM
-SHAppBarMessage(ABM_NEW, &abd);
-```
+接收和发送可分别启用，并为当前账号设置接收译文语言、发送目标语言和翻译通道。发送翻译框顶部提供 AI 翻译、通道和语言选择。翻译设置集中放在侧边栏。
 
-### 📌 设置窗口位置与层级
+发送时可在 Signal 原生输入框修改、确认译文，再发送。翻译框内 `Shift + Enter` 换行；中文输入法确认候选词时不会触发翻译。翻译失败保留输入原文并显示错误。发送完成后，焦点回到本次最初输入的框：从翻译框开始就回到翻译框，直接使用原生框就留在原生框。
 
-```cpp
-SetWindowPos(hwnd, HWND_TOPMOST, x, y, width, height, SWP_NOACTIVATE);
-```
+### 多账户与环境
 
-> 建议设置为 `Qt.Tool` 类型 + 无边框 + 最顶层，确保不打断用户正常焦点切换
+账号栏的 `+` 跟随账号列表，可添加新账户并完成独立关联。后台账号保持各自会话，并在账号标签显示未读角标。不同账号可分别选择翻译语言、指纹及代理配置。新账号默认折叠 Signal 左侧导航选项卡。
 
----
+环境配置在侧边栏中操作，保存后重新加载当前账号。指纹配置作用于桌面页面的浏览器属性，不改变 Signal 账号或设备标识。代理覆盖当前账号的 Signal 消息、附件及页面网络；Signal 原生音视频网络不受浏览器 WebRTC 设置控制。OneChat 共享翻译连接及应用更新不属于逐账号代理的覆盖范围。
 
-## 🖥️ 多显示器支持
+## 翻译与本地数据
 
-- 使用 `EnumDisplayMonitors()` 获取所有显示器的矩形信息
-- 根据用户选择的显示器和边缘方向注册窗口
-- 支持多屏布局、主副屏切换等场景
+Signal 消息收发继续使用 Signal 客户端的消息流程。**开启 AI 翻译时，需要翻译的消息正文会提交给 OneChat 翻译服务进行处理**；请根据聊天内容决定是否开启翻译。翻译处理发生在本机解密后的消息内容上。
 
----
+聊天记录和译文保存在本地，各账号使用独立数据库。接收译文不会覆盖原始 Signal 消息，也不会通过 Signal 发回对方。发送原文仅用于本机回看；直接在原生输入框发送的消息，不会生成没有实际保存依据的原文。消息编辑、撤回或擦除后，对应缓存按消息状态更新或失效。
 
-## 🧮 高 DPI 缩放支持
+多个账号共享同一应用的 OneChat 服务连接和激活状态，Signal 会话与各账号翻译偏好仍独立。当前只移植翻译及相关账户、环境功能，未加入统计和 AI 助手。
 
-PySide6 默认启用了高 DPI 支持，但与 Win32 API 的坐标需统一。
+## 更新方式
 
-添加以下代码以防止坐标错位：
+8.29.1 首次加入本项目自动更新。旧版 8.29.0 用户需要先手动安装本次版本，此后使用软件内更新功能。
 
-```python
-from PySide6.QtWidgets import QApplication
-from PySide6.QtCore import Qt
+更新服务为 `https://signal-update.1chat.ws/`。检测到更高版本后自动下载，下载完成显示“有可用更新”；点击打开更新界面，确认“立即安装”后重启安装。不会在后台自动安装或降级。请在确认安装前完成正在编辑的消息。
 
-QApplication.setHighDpiScaleFactorRoundingPolicy(
-    Qt.HighDpiScaleFactorRoundingPolicy.PassThrough
-)
-```
+## 上游与许可证
 
----
+- 官方上游：[signalapp/Signal-Desktop](https://github.com/signalapp/Signal-Desktop)
+- 本项目维护者：[OneChat-Dev](https://github.com/OneChat-Dev)
+- 上游许可证：GNU Affero General Public License v3，完整文本见 [LICENSE](LICENSE)。本项目保留上游版权和第三方组件说明。
 
-## 🧠 焦点控制与体验优化
-
-- 窗口类型应为 `Qt.Tool`，不会打断其他程序的焦点
-- 不建议设为全屏，否则会覆盖任务栏，引起用户困扰
-- 避免设置为“焦点强制抢占窗口”
-
----
-
-## ⚙️ 系统权限与兼容性
-
-| 项目         | 支持情况 |
-|--------------|----------|
-| 系统版本     | ✅ Win7 / Win10 / Win11 |
-| 注册 AppBar  | ✅ 无需管理员权限 |
-| 开机自启     | ❗ 需要写注册表或创建计划任务，需管理员权限 |
-| 高 DPI 显示  | ✅ PySide6 默认支持，需坐标同步 |
-| 多显示器     | ✅ 支持，需使用 Win32 API 获取屏幕信息 |
-
----
-
-## 🚀 可选增强功能（推荐扩展）
-
-| 功能                      | 技术说明 |
-|---------------------------|-----------|
-| 自动隐藏/显示侧边栏      | 鼠标靠近屏幕边缘时自动展开 |
-| 开机自启                  | 写入注册表 `Run` 或计划任务 |
-| 系统托盘图标交互          | 使用 `QSystemTrayIcon` 实现弹出菜单、退出等操作 |
-| 实时动态内容展示          | 使用 WebSocket 或后台 AI 接口推送 |
-| 窗口点击穿透              | 可设置 `WS_EX_TRANSPARENT` 属性实现“点击穿透”效果 |
-
----
-
-## 📁 目录结构示意
-
-```bash
-sidebar_appbar/
-├── main.py                  # 主程序入口
-├── appbar_utils.py          # 注册 AppBar 的封装
-├── screen_helper.py         # 多屏幕获取与处理
-├── resources/
-│   └── icon.png             # 托盘图标资源
-├── docs/
-│   └── demo_screenshot.png  # 效果图
-└── README.md
-```
-
----
-
-## 💻 安装依赖
-
-```bash
-pip install PySide6
-```
-
----
-
-## 🖼️ 示例效果图
-
-![示例图](docs/demo_screenshot.png)
-
----
-
-## 🧪 示例代码片段
-
-```python
-from PySide6.QtWidgets import QMainWindow, QApplication
-from PySide6.QtCore import Qt
-import ctypes
-from appbar_utils import register_appbar, set_window_pos
-
-class MainWindow(QMainWindow):
-    def __init__(self):
-        super().__init__()
-        self.setWindowFlags(Qt.Tool | Qt.FramelessWindowHint)
-        self.setFixedWidth(80)
-        self.show()
-        hwnd = int(self.winId())
-        register_appbar(hwnd, edge='left')
-        set_window_pos(hwnd, x=0, y=0, w=80, h=QApplication.primaryScreen().size().height())
-```
-
----
-
-## 📜 License
-
-本项目遵循 [MIT License](https://opensource.org/licenses/MIT)
-
----
-
-
-欢迎 PR 和 Star 🌟 支持项目发展！
+此仓库用于发布安装包和说明文档；当前不在仓库或 Release 中上传本专版源代码。GitHub 自动生成的 Source code 压缩包仅对应此仓库的文档，不是应用源码。
